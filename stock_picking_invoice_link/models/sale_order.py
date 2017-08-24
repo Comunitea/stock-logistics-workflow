@@ -15,7 +15,6 @@ class SaleOrderLine(models.Model):
             .mapped('move_ids') \
             .filtered(
                 lambda x: x.state == 'done' and
-                not x.invoice_line_id and
                 not x.location_dest_id.scrap_location and
                 x.location_dest_id.usage == 'customer') \
             .mapped('picking_id') \
@@ -27,7 +26,6 @@ class SaleOrderLine(models.Model):
         vals = super(SaleOrderLine, self)._prepare_invoice_line(qty)
         move_ids = self.mapped('procurement_ids').mapped('move_ids').filtered(
             lambda x: x.state == 'done' and
-            not x.invoice_line_id and
             not x.location_dest_id.scrap_location and
             x.location_dest_id.usage == 'customer').ids
         vals['move_line_ids'] = [(6, 0, move_ids)]
