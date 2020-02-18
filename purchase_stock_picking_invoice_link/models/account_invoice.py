@@ -17,7 +17,7 @@ class AccountInvoice(models.Model):
             move_ids = moves._get_moves()
             vals['move_line_ids'] = [(6, 0, move_ids.ids)]
             pickings = move_ids.mapped('picking_id')
-            pickings.invoice_ids = [(4, self.id)]
+            self.picking_ids = [(6, 0, pickings.ids)]
         return vals
 
     @api.model
