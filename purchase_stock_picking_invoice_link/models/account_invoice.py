@@ -17,7 +17,8 @@ class AccountInvoice(models.Model):
             move_ids = moves._get_moves()
             vals['move_line_ids'] = [(6, 0, move_ids.ids)]
             pickings = move_ids.mapped('picking_id')
-            pickings.invoice_ids = [(4, self.id)]
+            for pick in pickings:
+                pick.invoice_ids = [(4, self.id)]
         return vals
 
     @api.model
@@ -27,15 +28,16 @@ class AccountInvoice(models.Model):
         if 'invoice_line_ids' not in values:
             return super().create(values)
         for item in values.get('invoice_line_ids'):
-            if not item[2].get('purchase_line_id'):
+            if not isinstance(item[2], dict) and not 'purchase_line_id' in item[2]:
                 continue
-            moves = self.env['stock.move'].search([
-                ('purchase_line_id', '=', item[2]['purchase_line_id']),
-            ])
-            if moves:
-                move_ids = moves._get_moves()
-                item[2]['move_line_ids'] = [(6, 0, move_ids.ids)]
-                pickings |= move_ids.mapped('picking_id')
+            elif item[2].get('purchase_line_id'):
+                moves = self.env['stock.move'].search([
+                    ('purchase_line_id', '=', item[2]['purchase_line_id']),
+                ])
+                if moves:
+                    move_ids = moves._get_moves()
+                    item[2]['move_line_ids'] = [(6, 0, move_ids.ids)]
+                    pickings |= move_ids.mapped('picking_id')
             result.append(item)
         if result and values.get('invoice_line_ids'):
             values['invoice_line_ids'] = result
