@@ -42,15 +42,17 @@ class StockPicking(models.Model):
                         rounding_method='HALF-UP'
                     )
                     new_move_id = move._split(qty_uom_split)
-                    for move_line in move.move_line_ids:
-                        if move_line.product_qty and move_line.qty_done:
-                            # To avoid an error
-                            # when picking is partially available
-                            try:
-                                move_line.write(
-                                    {'product_uom_qty': move_line.qty_done})
-                            except UserError:
-                                pass
+                    move.move_line_ids.unlink()
+                    move._action_assign()
+                    # for move_line in move.move_line_ids:
+                    #     if move_line.product_qty and move_line.qty_done:
+                    #         # To avoid an error
+                    #         # when picking is partially available
+                    #         try:
+                    #             move_line.write(
+                    #                 {'product_uom_qty': move_line.qty_done})
+                    #         except UserError:
+                    #             pass
                     new_moves |= self.env['stock.move'].browse(new_move_id)
 
             # If we have new moves to move, create the backorder picking
